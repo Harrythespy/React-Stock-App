@@ -1,11 +1,10 @@
 import React from 'react';
-import stocks from './stocks.svg';
 import './App.css';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import Nav from './Nav';
-import Stock from './Stock';
-import Home from './Home';
-import StockDetail from './StockDetail';
+import Nav from './Components/Nav';
+import Stock from './Components/Stock';
+import Home from './Components/Home';
+import StockDetail from './Components/StockDetail';
 
 function App() {
   return (
@@ -21,7 +20,5 @@ function App() {
     </Router>
   );
 }
-
-
 
 export default App;
