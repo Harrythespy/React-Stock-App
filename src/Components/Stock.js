@@ -79,26 +79,29 @@ function DropdownSearch(props) {
   );
 }
 
+
+
 function Stock() {
   const [search, setSearch] = useState("");
-  // const [select, setSelect] = useState("");
+  const [select, setSelect] = useState("");
   const { loading, stocks, error } = useAllStocks();
   const [filterStocks, setFilterStocks] = useState([]);
   
-  // Columns and Headers in the table
-  const columns = [
-      { headerName: "Symbol", field: "symbol", width: 100},
-      { headerName: "Name", field: "name", width: 300},
-      { headerName: "Industry", field: "industry", width: 300},
-  ];
   // Attributes for ag-grid-react table
   const gridOptions = {
-      columnDefs: columns,
-      defaultColDef: {
-      // filter: true,
-      // sortable: true,
-      },
+      columnDefs: [
+        { headerName: "Symbol", field: "symbol", width: 100},
+        { headerName: "Name", field: "name", width: 300},
+        { headerName: "Industry", field: "industry", width: 300},
+      ],
+      rowSelection: "single",
+      onSelectionChanged: onSelectionChanged,
   };
+
+  function onSelectionChanged() {
+    var selectedRows = gridOptions.api.getSelectedRows();
+    console.log(selectedRows);
+  }
 
   var industries = stocks.map( stock => {
     // Return the whole list of industries
@@ -107,35 +110,38 @@ function Stock() {
   var uniqueIndustries = industries.filter((v, i, s) => {
     return s.indexOf(v) === i;
   });
+  
+  // const filteredValue = (value) => {
+  //   let _stocks = [];
+  //   // check if there's value in search bar
+  //   search === ""? _stocks=[...stocks]: _stocks=[...filterStocks];
+  //   _stocks = _stocks.filter( stock => {
+  //     const match = stock.industry.includes(value);
+  //     return match;
+  //   });
+  //   setFilterStocks(_stocks);
+  // }
+  var searchResults = stocks.filter(stock => {
+    return stock.symbol.toLowerCase().includes(search.toLowerCase());
+  });
 
-  
-  // Retrieve unique values of industry array
-  
-  
-  const filteredValue = (value) => {
-    if(value === "") {
-      console.log("no industry");
-      setFilterStocks([...stocks]);
+  useEffect(() => {
+    // Filter the stocks when the dependencies are changed
+    if (select === "") {
+      setFilterStocks(searchResults);
     } else {
-      let _stocks = [];
+      var _stocks = [];
       // check if there's value in search bar
-      search === ""? _stocks=[...stocks]: _stocks=[...filterStocks];
+      console.log(`Current Industry: ${select}`);
+      search === ""? _stocks=[...stocks]: _stocks=searchResults;
       _stocks = _stocks.filter( stock => {
-        const match = stock.industry.includes(value);
+        const match = stock.industry.includes(select);
         return match;
       });
       setFilterStocks(_stocks);
     }
-  }
-
-  useEffect(() => {
-    // Filter the stocks when the dependencies are changed
-    setFilterStocks(
-      stocks.filter(stock => {
-        return stock.symbol.toLowerCase().includes(search.toLowerCase());
-      })
-    );
-  }, [search, stocks]);
+    
+  }, [search, stocks, select]);
   
   if (error) {
     // Check if there's no error when fetching data
@@ -151,7 +157,7 @@ function Stock() {
     <div className="App">
       <div className="container">
         <SearchBar onSubmitSearch={ value => setSearch(value) } />
-        <DropdownSearch onSelectIndustry={filteredValue} industries={uniqueIndustries} />
+        <DropdownSearch onSelectIndustry={value => setSelect(value)} industries={uniqueIndustries} />
         <p>
             <Badge color="success">{filterStocks.length}</Badge> Stocks in the Dataset.
         </p>
@@ -163,7 +169,6 @@ function Stock() {
         }}
         >
           <AgGridReact 
-              columnDefs={columns}
               rowData={filterStocks}
               pagination={true}
               paginationAutoPageSize={true}
