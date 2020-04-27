@@ -59,7 +59,7 @@ function DropdownSearch(props) {
 
   useEffect(() => {
     props.onSelectIndustry(innerSelect);
-  }, [innerSelect]);
+  }, [innerSelect, props]);
 
   return (
     <Col sm={8}>
@@ -70,7 +70,7 @@ function DropdownSearch(props) {
         }}>
         <option value=""></option>
         {props.industries.map(industry => (
-          <option key={industry} value={industry}>
+          <option key={props.industries.indexOf(industry)} value={industry}>
             {industry}
           </option>
         ))}
@@ -79,9 +79,7 @@ function DropdownSearch(props) {
   );
 }
 
-
-
-function Stock() {
+function Stock(props) {
   const [search, setSearch] = useState("");
   const [select, setSelect] = useState("");
   const { loading, stocks, error } = useAllStocks();
@@ -99,34 +97,63 @@ function Stock() {
   };
 
   function onSelectionChanged() {
-    var selectedRows = gridOptions.api.getSelectedRows();
-    console.log(selectedRows);
+    var selectedRow = gridOptions.api.getSelectedRows();
+    console.log(selectedRow[0].symbol);
+    props.history.push({
+      pathname: '/history',
+      search: `?symbol=${selectedRow[0].symbol}`
+    });
   }
 
   var industries = stocks.map( stock => {
     // Return the whole list of industries
     return stock.industry;
   });
-  var uniqueIndustries = industries.filter((v, i, s) => {
+
+  const uniqueIndustries = industries.filter((v, i, s) => {
     return s.indexOf(v) === i;
   });
-  
-  // const filteredValue = (value) => {
-  //   let _stocks = [];
-  //   // check if there's value in search bar
-  //   search === ""? _stocks=[...stocks]: _stocks=[...filterStocks];
-  //   _stocks = _stocks.filter( stock => {
-  //     const match = stock.industry.includes(value);
-  //     return match;
-  //   });
-  //   setFilterStocks(_stocks);
-  // }
+
   var searchResults = stocks.filter(stock => {
     return stock.symbol.toLowerCase().includes(search.toLowerCase());
   });
 
+  // function symbolFilter(stocks) {
+  //   // This is for searching the symbol
+  //   if (search.length === 0) {
+  //     return stocks;
+  //   } else {
+  //     stocks.filter(stock => {
+  //       return stock.symbol.toLowerCase().includes(search.toLowerCase());
+  //     });
+  //   }
+  // }
+
+  // function industryFilter(stocks) {
+  //   // This is for Selecting the industry
+  //   if (select.length === 0) {
+  //     return stocks;
+  //   }
+  //   else {
+  //     var _stocks = [];
+  //     console.log(`Current Industry: ${select}`);
+  //     stocks.filter(stock => {
+  //       const match = stock.industry.includes(select);
+  //       return match;
+  //     });
+  //     return _stocks;
+  //   }
+  // }
+
   useEffect(() => {
+    
+    // symbolFilter(stocks, search)
+    //   .then(stocks => industryFilter(stocks, select))
+    //   .then(stocks => setFilterStocks(stocks))
+    //   .catch(e => console.log(e));
+
     // Filter the stocks when the dependencies are changed
+
     if (select === "") {
       setFilterStocks(searchResults);
     } else {
@@ -152,7 +179,6 @@ function Stock() {
       return <p>Loading..</p>;
   }
   
-
   return (
     <div className="App">
       <div className="container">
@@ -173,6 +199,7 @@ function Stock() {
               pagination={true}
               paginationAutoPageSize={true}
               gridOptions={gridOptions}
+              reactNext={true}
           />
         </div>    
       </div>

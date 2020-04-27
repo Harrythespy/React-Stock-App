@@ -25,6 +25,31 @@ export function useAllStocks() {
     };
 }
 
+export function useStockHistories(symbol, from) {
+    const [loading, setLoading] = useState(true); 
+    const [data, setData] = useState([]); 
+    const [error, setError] = useState(null);
+    
+    useEffect(() => { 
+        getStockHistory(symbol, from)
+        .then( histories => {
+            setData(histories);
+            setLoading(false);
+        })
+          .catch((e) => { 
+            setError(e);
+            setLoading(false); 
+          }); 
+        },
+    // This blank array are the 'dependencies'
+    []);
+    return { 
+    loading,
+    data,
+    error, 
+    };
+}
+
 function getStocks() {
     return fetch("http://131.181.190.87:3001/all")
         .then(res => res.json())
@@ -36,4 +61,26 @@ function getStocks() {
                 };
             })
         );
+}
+
+function getStockHistory(symbol, from="") {
+    const url = `http://131.181.190.87:3001/history?symbol=${symbol}` +
+    (from? `&from=${from}`: "")
+    return fetch(url)
+            .then(res => res.json())
+            .then(histories => histories.map( 
+                history => {
+                    return {
+                        timestamp: history.timestamp,
+                        symbol: history.symbol,
+                        name: history.name,
+                        industry: history.industry,
+                        open: history.open,
+                        high: history.high,
+                        low: history.low,
+                        close: history.close,
+                        volumes: history.volumes
+                    };
+                }
+            ));
 }
