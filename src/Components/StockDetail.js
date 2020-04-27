@@ -3,7 +3,7 @@ import '../App.css';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-balham.css';
-import { getStockHistory } from '../stock_apis';
+import { useStockHistories } from '../stock_apis';
 import { Label, Col, Row } from 'reactstrap';
 import moment from 'moment';
 
@@ -44,15 +44,16 @@ function Dropdown(props) {
 }
 
 function GridTable(props) {
+    var dateCellRenderer = function(date) {
+        return moment(date.value).subtract(1, 'days').format("L");
+    }
     const gridOptions = {
         columnDefs: [
             { 
                 headerName: "Date", 
                 field: "timestamp", 
-                width: 130,
-                cellRenderer: (data) => {
-                    return moment(data.createdAt).format('L');
-                }
+                width: 150,
+                cellRenderer: dateCellRenderer,
             },
             { headerName: "Open", field: "open", width: 100},
             { headerName: "High", field: "high", width: 100},
@@ -67,7 +68,7 @@ function GridTable(props) {
         className="ag-theme-balham table-container"
         style={{
             height: "300px",
-            width: "65vh",
+            width: "67vh",
         }}
         >
           <AgGridReact 
@@ -83,24 +84,16 @@ function GridTable(props) {
 
 function StockDetail(props) {
     const symbol = props.location.search.substring(8);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const {loading, data, error} = useStockHistories(symbol);
+    // const [error, setError] = useState(null);
+    // const [loading, setLoading] = useState(true);
     const [timestamp, setTimestamp] = useState("");
     const [histories, setHistories] = useState([]);
-    const timestamps = histories.map(history => {
-        return moment(history.timestamp).format('L');
-    });
+    
+
     useEffect(() => {
-        getStockHistory(symbol, timestamp)
-            .then(histories => {
-                setHistories(histories);
-                setLoading(false);
-            })
-            .catch(error => {
-                setError(error);
-                setLoading(true);
-            });
-    }, [histories, timestamp]);
+        setHistories(data);
+    }, [data, histories]);
     
     
     if(loading) {
@@ -118,7 +111,9 @@ function StockDetail(props) {
                 onSelectHistory={
                     value => setTimestamp(moment(value).format().substring(0,10))
                 } 
-                histories={timestamps}/>
+                histories={histories.map(history => {
+                    return moment(history.timestamp).format("L");
+                })}/>
             </div>
                 <Label>Showing stocks for {histories[0].name}</Label>
             <div className="grid-table">
