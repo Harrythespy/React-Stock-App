@@ -21,8 +21,8 @@ function Dropdown(props) {
             <Col xs="6" sm="2" />
             <Col xs="6" sm="8">
                 <Row>     
-                    <Col xs="5" sm="3">
-                        <Label>Search date from</Label>
+                    <Col xs="5" sm="2">
+                        <Label>Search from</Label>
                     </Col>
                     <Col xs="7" sm="5">
                         <select 
@@ -30,7 +30,7 @@ function Dropdown(props) {
                             onChange={e => {
                             setInnerSelect(e.target.value);
                             }}>
-                            <option value=""></option>
+                            <option value="">Date</option>
                             {innerHistories.map(history => (
                             <option 
                                 key={innerHistories.indexOf(history)} 
@@ -79,16 +79,16 @@ function GridTable(props) {
     
     return (
         <div 
-        className="ag-theme-balham table-container"
+        className="ag-theme-balham"
         style={{
-            height: "300px",
-            width: "67vh",
+            height: "210px",
+            width: "655px",
         }}
         >
           <AgGridReact 
               rowData={props.histories}
               pagination={true}
-              paginationAutoPageSize={true}
+              paginationPageSize={5}
               gridOptions={gridOptions}
               reactNext={true}
           />
@@ -129,7 +129,6 @@ function LineChart(props) {
             return history.timestamp;
         }))
     }, [props]);
-
     return (
         <Line 
             data={data}
@@ -141,6 +140,12 @@ function LineChart(props) {
                     fontSize: 20
                 },
                 scales: {
+                    xAxes: [{
+                        scaleLabel: {
+                          display: true,
+                          labelString: 'Timestamp'
+                        }
+                    }],
                     yAxes: [{
                         scaleLabel: {
                             labelString: "Price",
@@ -149,15 +154,8 @@ function LineChart(props) {
                         ticks: {
                             beginAtZero:true,
                             min: 0,
-                            max: 100    
                         }
-                      }],
-                    xAxes: [{
-                        scaleLabel: {
-                          display: true,
-                          labelString: 'Timestamp'
-                        }
-                    }],
+                      }]
                    }
                 }
             }
@@ -213,7 +211,7 @@ function StockDetail(props) {
                     histories={ogTimestamp}/>
                 </div>
                 <hr />
-                <div className="grid-table">
+                <div>
                     <Row>
                         <Col sm={{size:4, offset:2}}>
                             <Label>Showing stocks for {histories[0].name}</Label>
@@ -222,7 +220,10 @@ function StockDetail(props) {
                             Totally <Badge color="success">{filterHistories.length}</Badge> histories.
                         </Col>
                     </Row>
-                    <GridTable histories={filterHistories}/>
+                    <Row>
+                        <Col sm={{offset:2}}/>
+                        <GridTable histories={filterHistories}/>
+                    </Row>
                 </div>
                 <hr/>
                 <div sm={{offset:4}}>

@@ -74,7 +74,7 @@ function DropdownSearch(props) {
         onChange={e => {
           setInnerSelect(e.target.value);
         }}>
-        <option value=""></option>
+        <option value="">All Industry</option>
         {props.industries.map(industry => (
           <option key={props.industries.indexOf(industry)} value={industry}>
             {industry}
@@ -200,14 +200,14 @@ function Stock(props) {
         <div 
         className="ag-theme-balham table-container"
         style={{
-            height: "610px",
+            height: "300px",
             width: "71.5vh",
         }}
         >
           <AgGridReact 
               rowData={filterStocks}
               pagination={true}
-              paginationAutoPageSize={true}
+              paginationPageSize={8}
               gridOptions={gridOptions}
               reactNext={true}
           />
