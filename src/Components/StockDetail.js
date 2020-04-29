@@ -4,7 +4,7 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 import { useStockHistories } from '../stock_apis';
-import { Label, Col, Row, Badge } from 'reactstrap';
+import { Label, Col, Row, Badge, Button } from 'reactstrap';
 import moment from 'moment';
 import { Line } from 'react-chartjs-2';
 
@@ -14,48 +14,60 @@ function Dropdown(props) {
 
     useEffect(() => {
         setInnerHistories(props.histories);
-        if(props.onSelectHistory) {
-            props.onSelectHistory(innerSelect);
-        }
-    }, [innerSelect, props]);
+    }, [props]); 
+
     return (
-        <div className="hisotry-dropdown">
-            <Label>Search date from</Label>
-            <Row>
-                <Col xs="6" sm="4" />
-                <Col xs="6" sm="4">
-                    <select 
-                        className="custom-select"  
-                        onChange={e => {
-                        setInnerSelect(e.target.value);
-                        }}>
-                        <option value=""></option>
-                        {innerHistories.map(history => (
-                        <option 
-                            key={innerHistories.indexOf(history)} 
-                            value={moment(new Date(history)).format('YYYY-MM-DD')}>
-                            {history}
-                        </option>
-                        ))}
-                    </select>
-                </Col>
-                <Col sm="4" />
-            </Row>
-        </div>
+        <Row>
+            <Col xs="6" sm="2" />
+            <Col xs="6" sm="8">
+                <Row>     
+                    <Col xs="5" sm="3">
+                        <Label>Search date from</Label>
+                    </Col>
+                    <Col xs="7" sm="5">
+                        <select 
+                            className="custom-select"  
+                            onChange={e => {
+                            setInnerSelect(e.target.value);
+                            }}>
+                            <option value=""></option>
+                            {innerHistories.map(history => (
+                            <option 
+                                key={innerHistories.indexOf(history)} 
+                                value={history.timestamp}>
+                                {history.timestamp}
+                            </option>
+                            ))}
+                        </select>
+                    </Col>
+                    <Col sm="4">
+                        <Button
+                            className="search-button"
+                            id="search-button"
+                            type="button"
+                            onClick={ e => {
+                                if(props.onSelectHistory) {
+                                    props.onSelectHistory(innerSelect);
+                                }
+                            }}
+                        >
+                        Search
+                        </Button>
+                    </Col>
+                </Row>
+            </Col>
+            <Col xs="6" sm="2" />
+        </Row>
     );
 }
 
 function GridTable(props) {
-    var dateCellRenderer = function(date) {
-        return moment(date.value).subtract(1, 'days').format("L");
-    }
     const gridOptions = {
         columnDefs: [
             { 
                 headerName: "Date", 
                 field: "timestamp", 
                 width: 150,
-                cellRenderer: dateCellRenderer,
             },
             { headerName: "Open", field: "open", width: 100},
             { headerName: "High", field: "high", width: 100},
@@ -89,7 +101,7 @@ function LineChart(props) {
     const data = {
         labels: time,
         datasets: [{
-            label: "close",
+            label: "Price",
             fill: false,
             backgroundColor: 'rgba(75,192,192,0.4)',
             borderColor: 'rgba(75,192,192,1)',
@@ -114,7 +126,7 @@ function LineChart(props) {
             return history.close;
         }));
         setTime(props.data.map( history => {
-            return moment(history.timestamp).format("L");
+            return history.timestamp;
         }))
     }, [props]);
 
@@ -127,8 +139,28 @@ function LineChart(props) {
                     display: true,
                     text: "Closing Price",
                     fontSize: 20
+                },
+                scales: {
+                    yAxes: [{
+                        scaleLabel: {
+                            labelString: "Price",
+                            display: true,
+                        },
+                        ticks: {
+                            beginAtZero:true,
+                            min: 0,
+                            max: 100    
+                        }
+                      }],
+                    xAxes: [{
+                        scaleLabel: {
+                          display: true,
+                          labelString: 'Timestamp'
+                        }
+                    }],
+                   }
                 }
-            }}
+            }
             height={100}
         />
     );
@@ -143,13 +175,12 @@ function StockDetail(props) {
     const [filterHistories, setFilterHistories] = useState([]);
 
     useEffect(() => {
-        setOgTimestamp(data.map( history => {
-            return moment(history.timestamp).subtract(1, 'days').format("L");
+        setHistories(data.filter(history => {
+            return history.timestamp = new Date(history.timestamp).toLocaleDateString();
         }));
-    }, [data]);
-
-    useEffect(() => {
-        setHistories(data);
+        setOgTimestamp(data.map( history => {
+            return history;
+        }));
     }, [data]);
     
     useEffect(() => {
@@ -158,13 +189,11 @@ function StockDetail(props) {
         } else {
             setFilterHistories(histories.filter(
                 history => {
-                    return moment(history.timestamp).isAfter(timestamp);
+                    return moment(history.timestamp).isSameOrAfter(timestamp);
                 })
             );
         }
     }, [timestamp, histories]);
-
-    
 
     if(loading) {
         return <div>Loading...</div>
@@ -172,26 +201,31 @@ function StockDetail(props) {
     if(error) {
         return <div>An error Occurred: {error.message}</div>
     }
-
+    
     return (
         <div className="App">
-            <div className="container">
+            <div className="container stock-container">
                 <div>
-                    <h1>Stock Detail Page</h1>
                     <Dropdown 
                     onSelectHistory={
                         value => setTimestamp(value)
                     }
                     histories={ogTimestamp}/>
                 </div>
-                <Label>Showing stocks for {histories[0].name}</Label>
+                <hr />
                 <div className="grid-table">
-                    <p>
-                        <Badge color="success">{filterHistories.length}</Badge> histories.
-                    </p>
+                    <Row>
+                        <Col sm={{size:4, offset:2}}>
+                            <Label>Showing stocks for {histories[0].name}</Label>
+                        </Col>
+                        <Col sm={{size:3}}>
+                            Totally <Badge color="success">{filterHistories.length}</Badge> histories.
+                        </Col>
+                    </Row>
                     <GridTable histories={filterHistories}/>
                 </div>
-                <div className="closing-chart">
+                <hr/>
+                <div sm={{offset:4}}>
                     <LineChart data={filterHistories}/>
                 </div>
             </div>

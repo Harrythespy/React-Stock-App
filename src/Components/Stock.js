@@ -4,53 +4,59 @@ import '../App.css';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-balham.css';
-import { Col, Input, Button, Badge } from "reactstrap";
+import { Col, Input, Button, Badge, Row } from "reactstrap";
 import { useAllStocks } from '../stock_apis';
 
 function SearchBar(props) {
   const [innerSearch, setInnerSearch] = useState("");
 
   return (
-    <div className="search-bar">
-      <Col sm={8}>
-        <Input 
-          aria-labelledby="search-button"
-          placeholder="Search.."
-          name="stock-search"
-          id="stock-search"
-          type="search"
-          value={innerSearch}
-          onChange={ e => {
-            setInnerSearch(e.target.value);
-          }}
-        />
-      </Col>
-      <Button
-        sm={6}
-        id="search-button"
-        type="button"
-        onClick={ e => {
-          if (props.onSubmitSearch) {
-              props.onSubmitSearch(innerSearch);
-          }
-        }}
-      >
-        Search
-      </Button>
-      <Button
-        sm={6}
-        id="clear-button"
-        type="button"
-        onClick={ e => {
-          if (props.onSubmitSearch) {
-              props.onSubmitSearch("");
-              setInnerSearch("");
-          }
-        }}
-      >
-        Clear
-      </Button>
-    </div>
+    <Col sm="6">
+      <Row>
+        <Col sm="6">
+          <Input 
+            aria-labelledby="search-button"
+            placeholder="Search symbol.."
+            name="stock-search"
+            id="stock-search"
+            type="search"
+            value={innerSearch}
+            onChange={ e => {
+              setInnerSearch(e.target.value);
+            }}
+          />
+        </Col>
+        <Col sm="3">
+          <Button
+            className="search-button"
+            id="search-button"
+            type="button"
+            onClick={ e => {
+              if (props.onSubmitSearch) {
+                  props.onSubmitSearch(innerSearch);
+              }
+            }}
+          >
+            Search
+          </Button>
+        </Col>
+        <Col sm="3">
+          <Button
+            className="search-button"
+            id="clear-button"
+            type="button"
+            onClick={ e => {
+              if (props.onSubmitSearch) {
+                  props.onSubmitSearch("");
+                  setInnerSearch("");
+              }
+            }}
+          >
+            Clear
+          </Button>
+        </Col>
+      </Row>
+    </Col>
   );
 }
 
@@ -62,7 +68,7 @@ function DropdownSearch(props) {
   }, [innerSelect, props]);
 
   return (
-    <Col sm={8}>
+    <Col sm="6">
       <select 
         className="custom-select"  
         onChange={e => {
@@ -84,7 +90,7 @@ function Stock(props) {
   const [select, setSelect] = useState("");
   const { loading, stocks, error } = useAllStocks();
   const [filterStocks, setFilterStocks] = useState([]);
-  
+  const [uniqueIndustries, setUniqueIndustries] = useState([]);
   // Attributes for ag-grid-react table
   const gridOptions = {
       columnDefs: [
@@ -105,20 +111,7 @@ function Stock(props) {
     });
   }
 
-  var industries = stocks.map( stock => {
-    // Return the whole list of industries
-    return stock.industry;
-  });
-
-  const uniqueIndustries = industries.filter((v, i, s) => {
-    return s.indexOf(v) === i;
-  });
-
-  var searchResults = stocks.filter(stock => {
-    return stock.symbol.toLowerCase().includes(search.toLowerCase());
-  });
-
-  // function symbolFilter(stocks) {
+  // function symbolFilter(stocks, search="") {
   //   // This is for searching the symbol
   //   if (search.length === 0) {
   //     return stocks;
@@ -129,7 +122,7 @@ function Stock(props) {
   //   }
   // }
 
-  // function industryFilter(stocks) {
+  // function industryFilter(stocks, select="") {
   //   // This is for Selecting the industry
   //   if (select.length === 0) {
   //     return stocks;
@@ -146,14 +139,21 @@ function Stock(props) {
   // }
 
   useEffect(() => {
-    
-    // symbolFilter(stocks, search)
-    //   .then(stocks => industryFilter(stocks, select))
-    //   .then(stocks => setFilterStocks(stocks))
-    //   .catch(e => console.log(e));
+    var industries = stocks.map( stock => {
+      // Return the whole list of industries
+      return stock.industry;
+    });
 
+    setUniqueIndustries(industries.filter((v, i, s) => {
+      return s.indexOf(v) === i;
+    }));
+  }, [stocks]);
+
+  useEffect(() => {
+    var searchResults = stocks.filter(stock => {
+      return stock.symbol.toLowerCase().includes(search.toLowerCase());
+    });
     // Filter the stocks when the dependencies are changed
-
     if (select === "") {
       setFilterStocks(searchResults);
     } else {
@@ -167,9 +167,8 @@ function Stock(props) {
       });
       setFilterStocks(_stocks);
     }
-    
   }, [search, stocks, select]);
-  
+
   if (error) {
     // Check if there's no error when fetching data
     return <p>Something went wrong: { error.message }</p>;
@@ -181,9 +180,20 @@ function Stock(props) {
   
   return (
     <div className="App">
-      <div className="container">
-        <SearchBar onSubmitSearch={ value => setSearch(value) } />
-        <DropdownSearch onSelectIndustry={value => setSelect(value)} industries={uniqueIndustries} />
+      <div className="container stock-container">
+        <div className="search-row">
+          <Row>
+            <Col sm="2"/>
+            <Col sm="8">
+              <Row>
+                <SearchBar onSubmitSearch={ value => setSearch(value) } />
+                <DropdownSearch onSelectIndustry={value => setSelect(value)} industries={uniqueIndustries} />
+              </Row>
+            </Col>
+            <Col sm="2"/>
+          </Row>
+        </div>
+        <hr/>
         <p>
             <Badge color="success">{filterStocks.length}</Badge> Stocks in the Dataset.
         </p>
