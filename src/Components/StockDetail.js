@@ -4,8 +4,9 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 import { useStockHistories } from '../stock_apis';
-import { Label, Col, Row } from 'reactstrap';
+import { Label, Col, Row, Badge } from 'reactstrap';
 import moment from 'moment';
+import { Line } from 'react-chartjs-2';
 
 function Dropdown(props) {
     const [innerHistories, setInnerHistories] = useState([]);
@@ -13,11 +14,10 @@ function Dropdown(props) {
 
     useEffect(() => {
         setInnerHistories(props.histories);
-        if(innerSelect !== "") {
+        if(props.onSelectHistory) {
             props.onSelectHistory(innerSelect);
         }
     }, [innerSelect, props]);
-
     return (
         <div className="hisotry-dropdown">
             <Label>Search date from</Label>
@@ -31,7 +31,9 @@ function Dropdown(props) {
                         }}>
                         <option value=""></option>
                         {innerHistories.map(history => (
-                        <option key={innerHistories.indexOf(history)} value={history}>
+                        <option 
+                            key={innerHistories.indexOf(history)} 
+                            value={moment(new Date(history)).format('YYYY-MM-DD')}>
                             {history}
                         </option>
                         ))}
@@ -81,21 +83,89 @@ function GridTable(props) {
         </div> 
     );
 }
+function LineChart(props) {
+    const [close, setClose] = useState([]);
+    const [time, setTime] = useState([]);
+    const data = {
+        labels: time,
+        datasets: [{
+            label: "close",
+            fill: false,
+            backgroundColor: 'rgba(75,192,192,0.4)',
+            borderColor: 'rgba(75,192,192,1)',
+            borderCapStyle: 'butt',
+            borderDash: [],
+            borderDashOffset: 0.0,
+            borderJoinStyle: 'miter',
+            pointBorderColor: 'rgba(75,192,192,1)',
+            pointBackgroundColor: '#fff',
+            pointBorderWidth: 1,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: 'rgba(75,192,192,1)',
+            pointHoverBorderColor: 'rgba(220,220,220,1)',
+            pointHoverBorderWidth: 2,
+            pointRadius: 1,
+            pointHitRadius: 10,
+            data: close
+        }]
+    };
+    useEffect(() => {
+        setClose(props.data.map( history => {
+            return history.close;
+        }));
+        setTime(props.data.map( history => {
+            return moment(history.timestamp).format("L");
+        }))
+    }, [props]);
+
+    return (
+        <Line 
+            data={data}
+            options={{
+                responsive: true,
+                title: {
+                    display: true,
+                    text: "Closing Price",
+                    fontSize: 20
+                }
+            }}
+            height={100}
+        />
+    );
+}
 
 function StockDetail(props) {
     const symbol = props.location.search.substring(8);
     const {loading, data, error} = useStockHistories(symbol);
-    // const [error, setError] = useState(null);
-    // const [loading, setLoading] = useState(true);
     const [timestamp, setTimestamp] = useState("");
     const [histories, setHistories] = useState([]);
-    
+    const [ogTimestamp, setOgTimestamp] = useState([]);
+    const [filterHistories, setFilterHistories] = useState([]);
+
+    useEffect(() => {
+        setOgTimestamp(data.map( history => {
+            return moment(history.timestamp).subtract(1, 'days').format("L");
+        }));
+    }, [data]);
 
     useEffect(() => {
         setHistories(data);
-    }, [data, histories]);
+    }, [data]);
     
+    useEffect(() => {
+        if(timestamp === "") {
+            setFilterHistories(histories)
+        } else {
+            setFilterHistories(histories.filter(
+                history => {
+                    return moment(history.timestamp).isAfter(timestamp);
+                })
+            );
+        }
+    }, [timestamp, histories]);
+
     
+
     if(loading) {
         return <div>Loading...</div>
     }
@@ -106,18 +176,24 @@ function StockDetail(props) {
     return (
         <div className="App">
             <div className="container">
-                <h1>Stock Detail Page</h1>
-                <Dropdown 
-                onSelectHistory={
-                    value => setTimestamp(moment(value).format().substring(0,10))
-                } 
-                histories={histories.map(history => {
-                    return moment(history.timestamp).format("L");
-                })}/>
-            </div>
+                <div>
+                    <h1>Stock Detail Page</h1>
+                    <Dropdown 
+                    onSelectHistory={
+                        value => setTimestamp(value)
+                    }
+                    histories={ogTimestamp}/>
+                </div>
                 <Label>Showing stocks for {histories[0].name}</Label>
-            <div className="grid-table">
-                <GridTable histories={histories}/>
+                <div className="grid-table">
+                    <p>
+                        <Badge color="success">{filterHistories.length}</Badge> histories.
+                    </p>
+                    <GridTable histories={filterHistories}/>
+                </div>
+                <div className="closing-chart">
+                    <LineChart data={filterHistories}/>
+                </div>
             </div>
         </div>
     );

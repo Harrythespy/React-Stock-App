@@ -25,13 +25,13 @@ export function useAllStocks() {
     };
 }
 
-export function useStockHistories(symbol, from) {
+export function useStockHistories(symbol) {
     const [loading, setLoading] = useState(true); 
     const [data, setData] = useState([]); 
     const [error, setError] = useState(null);
     
     useEffect(() => { 
-        getStockHistory(symbol, from)
+        getStockHistory(symbol)
         .then( histories => {
             setData(histories);
             setLoading(false);
@@ -42,7 +42,7 @@ export function useStockHistories(symbol, from) {
           }); 
         },
     // This blank array are the 'dependencies'
-    [symbol, from]);
+    [symbol]);
     return { 
     loading,
     data,
@@ -63,9 +63,9 @@ function getStocks() {
         );
 }
 
-function getStockHistory(symbol, from="") {
-    const url = `http://131.181.190.87:3001/history?symbol=${symbol}` +
-    (from? `&from=${from}`: "")
+function getStockHistory(symbol) {
+    const url = `http://131.181.190.87:3001/history?symbol=${symbol}`;
+  
     return fetch(url)
             .then(res => res.json())
             .then(histories => histories.map( 
