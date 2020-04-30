@@ -171,10 +171,10 @@ function StockDetail(props) {
     const [histories, setHistories] = useState([]);
     const [ogTimestamp, setOgTimestamp] = useState([]);
     const [filterHistories, setFilterHistories] = useState([]);
-
+    
     useEffect(() => {
         setHistories(data.filter(history => {
-            return history.timestamp = new Date(history.timestamp).toLocaleDateString();
+            return history.timestamp = moment(history.timestamp).format("L");
         }));
         setOgTimestamp(data.map( history => {
             return history;
