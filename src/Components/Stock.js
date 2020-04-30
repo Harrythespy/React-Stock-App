@@ -166,6 +166,7 @@ function Stock(props) {
         return match;
       });
       setFilterStocks(_stocks);
+
     }
   }, [search, stocks, select]);
 

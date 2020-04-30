@@ -132,6 +132,7 @@ function LineChart(props) {
     return (
         <Line 
             data={data}
+            height={100}
             options={{
                 responsive: true,
                 title: {
@@ -159,7 +160,6 @@ function LineChart(props) {
                    }
                 }
             }
-            height={100}
         />
     );
 }
@@ -187,7 +187,7 @@ function StockDetail(props) {
         } else {
             setFilterHistories(histories.filter(
                 history => {
-                    return moment(history.timestamp).isSameOrAfter(timestamp);
+                    return moment(new Date(history.timestamp)).isSameOrAfter(new Date(timestamp));
                 })
             );
         }
