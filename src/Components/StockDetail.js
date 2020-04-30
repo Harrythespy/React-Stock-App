@@ -67,14 +67,17 @@ function GridTable(props) {
             { 
                 headerName: "Date", 
                 field: "timestamp", 
-                width: 150,
+                width: 150
             },
-            { headerName: "Open", field: "open", width: 100},
-            { headerName: "High", field: "high", width: 100},
-            { headerName: "Low", field: "low", width: 100},
-            { headerName: "Close", field: "close", width: 100},
-            { headerName: "Volumes", field: "volumes", width: 100},
-        ]
+            { headerName: "Open", field: "open"},
+            { headerName: "High", field: "high"},
+            { headerName: "Low", field: "low"},
+            { headerName: "Close", field: "close"},
+            { headerName: "Volumes", field: "volumes"},
+        ],
+        defaultColDef: {
+            width: 100
+        }
     };
     
     return (
@@ -213,7 +216,7 @@ function StockDetail(props) {
                 <hr />
                 <div>
                     <Row>
-                        <Col sm={{size:4, offset:2}}>
+                        <Col sm={{size:4, offset:3}}>
                             <Label>Showing stocks for {histories[0].name}</Label>
                         </Col>
                         <Col sm={{size:3}}>
@@ -221,8 +224,11 @@ function StockDetail(props) {
                         </Col>
                     </Row>
                     <Row>
-                        <Col sm={{offset:2}}/>
-                        <GridTable histories={filterHistories}/>
+                        <Col/>
+                        <Col>
+                            <GridTable histories={filterHistories}/>
+                        </Col>
+                        <Col/>
                     </Row>
                 </div>
                 <hr/>

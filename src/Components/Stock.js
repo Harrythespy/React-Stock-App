@@ -94,10 +94,14 @@ function Stock(props) {
   // Attributes for ag-grid-react table
   const gridOptions = {
       columnDefs: [
-        { headerName: "Symbol", field: "symbol", width: 100},
-        { headerName: "Name", field: "name", width: 300},
-        { headerName: "Industry", field: "industry", width: 300},
+        { headerName: "Symbol", field: "symbol"},
+        { headerName: "Name", field: "name"},
+        { headerName: "Industry", field: "industry"},
       ],
+      defaultColDef: {
+        sortable: true,
+        filter: "agTextColumnFilter",
+      },
       rowSelection: "single",
       onSelectionChanged: onSelectionChanged,
   };
@@ -111,63 +115,36 @@ function Stock(props) {
     });
   }
 
-  // function symbolFilter(stocks, search="") {
-  //   // This is for searching the symbol
-  //   if (search.length === 0) {
-  //     return stocks;
-  //   } else {
-  //     stocks.filter(stock => {
-  //       return stock.symbol.toLowerCase().includes(search.toLowerCase());
-  //     });
-  //   }
-  // }
-
-  // function industryFilter(stocks, select="") {
-  //   // This is for Selecting the industry
-  //   if (select.length === 0) {
-  //     return stocks;
-  //   }
-  //   else {
-  //     var _stocks = [];
-  //     console.log(`Current Industry: ${select}`);
-  //     stocks.filter(stock => {
-  //       const match = stock.industry.includes(select);
-  //       return match;
-  //     });
-  //     return _stocks;
-  //   }
-  // }
-
   useEffect(() => {
     var industries = stocks.map( stock => {
       // Return the whole list of industries
       return stock.industry;
     });
-
     setUniqueIndustries(industries.filter((v, i, s) => {
       return s.indexOf(v) === i;
     }));
   }, [stocks]);
 
   useEffect(() => {
-    var searchResults = stocks.filter(stock => {
-      return stock.symbol.toLowerCase().includes(search.toLowerCase());
+    
+    const symbolResult = stocks.filter(stock => {
+      if (search.length === 0){
+        return stocks;
+      } else {
+        return stock.symbol.toLowerCase().includes(search.toLowerCase());
+      }
     });
-    // Filter the stocks when the dependencies are changed
-    if (select === "") {
-      setFilterStocks(searchResults);
-    } else {
-      var _stocks = [];
-      // check if there's value in search bar
-      console.log(`Current Industry: ${select}`);
-      search === ""? _stocks=[...stocks]: _stocks=searchResults;
-      _stocks = _stocks.filter( stock => {
+
+    const industryResult = symbolResult.filter(stock => {
+      if (select.length === 0){
+        return stocks;
+      } else {
         const match = stock.industry.includes(select);
         return match;
-      });
-      setFilterStocks(_stocks);
+      }
+    });
 
-    }
+    setFilterStocks(industryResult);
   }, [search, stocks, select]);
 
   if (error) {
@@ -198,21 +175,27 @@ function Stock(props) {
         <p>
             <Badge color="success">{filterStocks.length}</Badge> Stocks in the Dataset.
         </p>
-        <div 
-        className="ag-theme-balham table-container"
-        style={{
-            height: "300px",
-            width: "71.5vh",
-        }}
-        >
-          <AgGridReact 
-              rowData={filterStocks}
-              pagination={true}
-              paginationPageSize={8}
-              gridOptions={gridOptions}
-              reactNext={true}
-          />
-        </div>    
+        <Row>
+          <Col/>
+          <Col>
+            <div 
+              className="ag-theme-balham"
+              style={{
+                  height: 300,
+                  width: 600,
+              }}
+            >
+              <AgGridReact 
+                  rowData={filterStocks}
+                  pagination={true}
+                  paginationPageSize={8}
+                  gridOptions={gridOptions}
+                  reactNext={true}
+              />
+            </div> 
+          </Col>
+          <Col/>
+        </Row>   
       </div>
     </div>
   );
