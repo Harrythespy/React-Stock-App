@@ -1,6 +1,5 @@
 import React from 'react';
 import '../App.css';
-
 import { AiOutlineStock } from 'react-icons/ai';
 
 function Home() {

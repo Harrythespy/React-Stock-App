@@ -76,7 +76,9 @@ function GridTable(props) {
             { headerName: "Volumes", field: "volumes"},
         ],
         defaultColDef: {
-            width: 100
+            width: 100,
+            sortable: true,
+            filter: true
         }
     };
     
@@ -147,7 +149,7 @@ function LineChart(props) {
                     xAxes: [{
                         scaleLabel: {
                           display: true,
-                          labelString: 'Timestamp'
+                          labelString: 'Date'
                         }
                     }],
                     yAxes: [{
@@ -206,34 +208,36 @@ function StockDetail(props) {
     return (
         <div className="App">
             <div className="container stock-container">
-                <div>
-                    <Dropdown 
-                    onSelectHistory={
-                        value => setTimestamp(value)
-                    }
-                    histories={ogTimestamp}/>
-                </div>
-                <hr />
-                <div>
-                    <Row>
-                        <Col sm={{size:4, offset:3}}>
-                            <Label>Showing stocks for {histories[0].name}</Label>
-                        </Col>
-                        <Col sm={{size:3}}>
-                            Totally <Badge color="success">{filterHistories.length}</Badge> histories.
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col/>
-                        <Col>
-                            <GridTable histories={filterHistories}/>
-                        </Col>
-                        <Col/>
-                    </Row>
-                </div>
-                <hr/>
-                <div sm={{offset:4}}>
-                    <LineChart data={filterHistories}/>
+                <div style={{flex:1, overflow:"auto"}}>
+                    <div>
+                        <Dropdown 
+                        onSelectHistory={
+                            value => setTimestamp(value)
+                        }
+                        histories={ogTimestamp}/>
+                    </div>
+                    <hr />
+                    <div>
+                        <Row>
+                            <Col sm={{size:4, offset:3}}>
+                                <Label>Showing stocks for {histories[0].name}</Label>
+                            </Col>
+                            <Col sm={{size:3}}>
+                                Totally <Badge color="success">{filterHistories.length}</Badge> histories.
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col/>
+                            <Col>
+                                <GridTable histories={filterHistories}/>
+                            </Col>
+                            <Col/>
+                        </Row>
+                    </div>
+                    <hr/>
+                    <div sm={{offset:4}}>
+                        <LineChart data={filterHistories}/>
+                    </div>
                 </div>
             </div>
         </div>
