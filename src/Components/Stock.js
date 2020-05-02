@@ -149,11 +149,11 @@ function Stock(props) {
 
   if (error) {
     // Check if there's no error when fetching data
-    return <p>Something went wrong: { error.message }</p>;
+    return <div><h2>An error Occurred: {error.message}</h2></div>;
   }
 
   if(loading) {
-      return <p>Loading..</p>;
+    return <div><h1>Loading...</h1></div>;
   }
   
   return (
@@ -183,6 +183,7 @@ function Stock(props) {
               style={{
                   height: 300,
                   width: 600,
+                  textAlign: "left"
               }}
             >
               <AgGridReact 

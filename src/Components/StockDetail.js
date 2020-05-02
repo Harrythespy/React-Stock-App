@@ -21,8 +21,8 @@ function Dropdown(props) {
             <Col xs="6" sm="2" />
             <Col xs="6" sm="8">
                 <Row>     
-                    <Col xs="5" sm="2">
-                        <Label>Search from</Label>
+                    <Col xs="5" sm="3">
+                        <Label>Search date from</Label>
                     </Col>
                     <Col xs="7" sm="5">
                         <select 
@@ -88,6 +88,7 @@ function GridTable(props) {
         style={{
             height: "210px",
             width: "655px",
+            textAlign: "left",
         }}
         >
           <AgGridReact 
@@ -149,12 +150,12 @@ function LineChart(props) {
                     xAxes: [{
                         scaleLabel: {
                           display: true,
-                          labelString: 'Date'
+                          labelString: 'Day'
                         }
                     }],
                     yAxes: [{
                         scaleLabel: {
-                            labelString: "Price",
+                            labelString: "($)",
                             display: true,
                         },
                         ticks: {
@@ -199,10 +200,10 @@ function StockDetail(props) {
     }, [timestamp, histories]);
 
     if(loading) {
-        return <div>Loading...</div>
+        return <div><h1>Loading...</h1></div>;
     }
     if(error) {
-        return <div>An error Occurred: {error.message}</div>
+        return <div><h2>An error Occurred: {error.message}</h2></div>;
     }
     
     return (
@@ -223,7 +224,7 @@ function StockDetail(props) {
                                 <Label>Showing stocks for {histories[0].name}</Label>
                             </Col>
                             <Col sm={{size:3}}>
-                                Totally <Badge color="success">{filterHistories.length}</Badge> histories.
+                                <Badge color="success">{filterHistories.length}</Badge> rows of data
                             </Col>
                         </Row>
                         <Row>
